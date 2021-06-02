@@ -1,0 +1,204 @@
+WITH orders_cte AS
+(
+	SELECT
+		co.order_id, customer_id, pizza_id,
+  		CASE
+          WHEN exclusions='' OR exclusions='null' THEN NULL
+          ELSE exclusions END AS exclusions,
+  		CASE
+          WHEN extras='' OR extras='null' THEN NULL
+          ELSE extras END AS extras,
+  		order_time,
+  		runner_id,
+  		CASE
+          WHEN pickup_time='null' THEN NULL
+          ELSE pickup_time::TIMESTAMP END AS pickup_time,
+  		CASE
+          WHEN distance LIKE '%km' THEN TRIM(end 'km' FROM distance)
+          WHEN distance='null' THEN NULL
+          ELSE distance::FLOAT END AS distance,
+  		CASE
+			  WHEN cancellation='' OR cancellation='null' THEN NULL
+  			ELSE cancellation END AS cancellation
+	FROM customer_orders co
+  JOIN runner_orders ro
+  ON ro.order_id = co.order_id
+)
+SELECT * FROM orders_cte
+
+QUESTION 1: How many pizzas were ordered?
+
+WITH orders_cte AS (
+  SELECT
+    co.order_id,
+    customer_id,
+    pizza_id,
+    CASE WHEN exclusions IN ('', 'null') THEN NULL ELSE exclusions END AS exclusions,
+    CASE WHEN extras IN ('','null') THEN NULL ELSE extras END AS extras,
+    order_time,
+    runner_id,
+    CASE WHEN pickup_time = 'null' THEN NULL ELSE pickup_time END AS pickup_time,
+    CASE WHEN distance LIKE '%km' THEN TRIM(
+      'km'
+      FROM
+        distance
+    ) WHEN distance = 'null' THEN NULL ELSE distance END AS distance,
+    CASE WHEN cancellation = ''
+    OR cancellation = 'null' THEN NULL ELSE cancellation END AS cancellation
+  FROM
+    customer_orders co
+    JOIN runner_orders ro ON ro.order_id = co.order_id
+)
+SELECT
+  COUNT(pizza_id) AS order_count
+FROM
+  orders_cte
+  
+QUESTION 2: UNIQUE Customer orders
+
+WITH orders_cte AS (
+     --orders_cte statement
+)
+SELECT
+  COUNT(DISTINCT order_id)
+FROM
+  orders_cte
+
+QUESTION 3: successful orders delivered by each runner
+
+WITH orders_cte AS (
+--orders_cte statement
+)
+SELECT
+	runner_id, COUNT(*) AS delivered_orders
+FROM
+  	orders_cte
+WHERE
+	cancellation IS NULL
+GROUP BY
+	runner_id
+ORDER BY
+	runner_id
+  
+QUESTION 4: number of each type of pizza delivered
+
+WITH orders_cte AS (
+     --- orders_cte statement
+)
+SELECT
+  	pizza_id, COUNT(*)
+FROM
+  	orders_cte
+WHERE
+	cancellation IS NULL
+GROUP BY
+	pizza_id
+  
+QUESTION 5: No. of vegetarian and meatlovers pizza ordered by each customer
+
+WITH orders_cte AS (
+    --orders_cte statement
+)
+SELECT
+  	customer_id,
+    pizza_name,
+    COUNT(*) AS order_count
+FROM
+  	orders_cte o
+JOIN
+	pizza_names p
+    ON p.pizza_id=o.pizza_id
+GROUP BY
+	customer_id,
+    pizza_name
+ORDER BY
+	customer_id
+  
+QUESTION 6: Maximum number of pizza delivered in a single order
+
+WITH orders_cte AS (
+   --orders_cte statement
+)
+SELECT
+  	COUNT(pizza_id) AS pizza_count
+FROM
+  	orders_cte
+WHERE
+	cancellation IS NULL
+GROUP BY
+	order_id
+ORDER BY 
+	pizza_count DESC
+LIMIT 1
+
+QUESTION 7: 
+
+Customer with delivered pizzas having atleast 1 change
+
+WITH orders_cte AS (
+   --orders_cte statement
+)
+SELECT
+  	customer_id,
+    COUNT(*) AS delivered_pizzas_with_a_change 
+FROM
+  	orders_cte
+WHERE
+	cancellation IS NULL
+  AND
+  	(exclusions IS NOT NULL OR extras IS NOT NULL)
+GROUP BY
+	o.customer_id
+ORDER BY o.customer_id
+
+
+Customers with delivered pizzas having no change
+
+WITH orders_cte AS (
+   --orders_cte statement
+)
+SELECT
+  	customer_id,
+    COUNT(*) AS delivered_pizzas_with_no_change 
+FROM
+  	orders_cte
+WHERE
+	cancellation IS NULL
+  AND
+  	(exclusions IS NULL AND extras IS NULL)
+GROUP BY
+	o.customer_id
+ORDER BY o.customer_id
+
+
+
+QUESTION 8: delivered pizzas having both exclusions and extras
+
+WITH orders_cte AS (
+    --orders_cte
+)
+SELECT
+  	COUNT(*) AS pizzas_having_both_exc_and_ext
+FROM
+  	orders_cte
+WHERE
+	cancellation IS NULL
+  AND
+  	(exclusions IS NOT NULL AND extras IS NOT NULL)
+
+
+
+QUESTION 9: volume of pizzas at each hour of the day
+
+WITH orders_cte AS (
+    --orders_cte statement
+)
+SELECT
+  	EXTRACT(hour FROM order_time) AS hour_of_the_day,
+  	COUNT(*)
+FROM
+  	orders_cte
+GROUP BY 
+	hour_of_the_day
+ORDER BY
+	hour_of_the_day
